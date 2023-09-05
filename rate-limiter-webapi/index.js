@@ -7,14 +7,14 @@ const port = 3000;
 
 const limiter = rateLimit({
     windowMs: 1000,
-    max: 10,
+    max: 100,
     message: 'Too many requests from this IP',
     standardHeaders: true,
     legacyHeaders: false
 });
 
 app.use(express.json());
-app.use(limiter);
+// app.use(limiter);
 
 const output = createWriteStream('output.ndjson');
 
