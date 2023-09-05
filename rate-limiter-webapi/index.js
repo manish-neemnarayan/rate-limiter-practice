@@ -20,7 +20,8 @@ const output = createWriteStream('output.ndjson');
 
 app.post("/", async (req, res) => {
     output.write(JSON.stringify(req.body) + "\n");
-    const resContent = req.body.title;
+    const resContent = req.body;
+    console.log(resContent);
     res.send(`${resContent} was posted!`);    
 })
 

@@ -18,20 +18,26 @@ import csv from "csv-parser";
 import { Transform } from "node:stream";
 import { randomUUID } from "node:crypto";
 import { log, makeRequest } from "./util.js";
+import ThrottleRequest from "./throttle.js";
 
+const throttle = new ThrottleRequest({
+    objectMode: true,
+    requestsPerSecond: 10
+})
 
 const dataProcessor = Transform({
     objectMode: true,
     transform(chunk, encoding, callback) {
         chunk.id = randomUUID();
-
+        console.log(chunk);
         return callback(null, JSON.stringify(chunk));
     }
 })
 
-await pipeline(createReadStream("big.csv"),
-    csv(),
-    dataProcessor,
+console.log("Starting...");
+await pipeline(
+    createReadStream("big.csv").on('error', (error) => console.error('ReadStream Error:', error)).pipe(csv()).pipe(dataProcessor)
+    .pipe(throttle).pipe(
     async function * (source) {
         let count = 0;
         for await (const chunk of source) {
@@ -41,5 +47,5 @@ await pipeline(createReadStream("big.csv"),
                 throw new Error(`oops! reached rate limit, stupid!! - status ${status}`)
             }
         }
-    }
+    })
 )
